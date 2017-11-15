@@ -1,5 +1,6 @@
 function tspgui()
 
+addpath('../gatbx')  ;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 NIND=50;		% Number of individuals
