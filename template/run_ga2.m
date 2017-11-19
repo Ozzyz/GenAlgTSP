@@ -66,8 +66,18 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         r_worst_fits = worst;
 
         if (sObjV(stopN)-sObjV(1) <= 1e-15)
-              break;
-        end          
+            disp('stop because of similar fitness values');
+            break;
+        end
+       
+        stop_interval = 80;
+        if (gen > stop_interval)
+            min_stop_delta = best(gen-stop_interval)*0.001;
+            if(abs(best(gen-stop_interval) - best(gen)) < min_stop_delta)
+                disp('stop because of no fitness improvement');
+                break;
+            end
+        end
         %assign fitness values to entire population
         FitnV=ranking(ObjV);
         %select individuals for breeding
