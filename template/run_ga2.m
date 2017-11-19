@@ -1,4 +1,4 @@
-function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, ah1, ah2, ah3)
+function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, PARENT_SELECTION, MUTATION)
 % usage: [r_path, r_dist, 
 %         r_gen, r_best_fits, 
 %         r_mean_fits, r_worst_fits] 
@@ -71,10 +71,10 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         %assign fitness values to entire population
         FitnV=ranking(ObjV);
         %select individuals for breeding
-        SelCh=select('sus', Chrom, FitnV, GGAP);
+        SelCh=select(PARENT_SELECTION, Chrom, FitnV, GGAP);
         %recombine individuals (crossover)
         SelCh = recombin(CROSSOVER,SelCh,PR_CROSS);
-        SelCh=mutateTSP('inversion',SelCh,PR_MUT);
+        SelCh=mutateTSP(MUTATION,SelCh,PR_MUT);
         %evaluate offspring, call objective function
         ObjVSel = tspfun(SelCh,Dist);
         %reinsert offspring into population
