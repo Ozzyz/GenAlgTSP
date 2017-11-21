@@ -70,6 +70,7 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
             break;
         end
        
+        %new stopping criterion
         stop_interval = 80;
         if (gen > stop_interval)
             min_stop_delta = best(gen-stop_interval)*0.001;
@@ -84,7 +85,9 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         SelCh=select(PARENT_SELECTION, Chrom, FitnV, GGAP);
         %recombine individuals (crossover)
         SelCh = recombin(CROSSOVER,SelCh,PR_CROSS);
-        SelCh=mutateTSP(MUTATION,SelCh,PR_MUT);
+        
+        representation = 1;
+        SelCh=mutateTSP(MUTATION,SelCh,PR_MUT, representation);
         %evaluate offspring, call objective function
         ObjVSel = tspfun(SelCh,Dist);
         %reinsert offspring into population
