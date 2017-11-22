@@ -13,8 +13,6 @@
 %
 
 function NewChrom = edge_recomb(OldChrom, XOVR)
-    disp("Old chromosomes:");
-    disp(OldChrom);
     % For each pair of parents
     dim = size(OldChrom);
     num_individuals = dim(1);
@@ -61,14 +59,27 @@ function NewChrom = edge_recomb(OldChrom, XOVR)
 end
 
 function [union_edgetable, N] = remove_edge(union_edgetable, city, K)
-    % Remove a city from the edgetable
+    % Removes a city from the edgetable and returns the next city to be
+    % added to path
+    % INPUT: Union edgetable: The table showing the neighbours of each city
+    % for the two selected parents
+    %        City : The currently selected city. Will be deleted in every
+    %        entry of the edgetable
+    %        K    : The current path
+    % RETURNS:
+    %        union_edgetable: The modified edgetable with all entries of
+    %        {city} removed
+    %        N: The next city to be added to path
+    %
+    
     cur_city_neigh = [];
-    % Store the number of neighbours for each city
+    % Store the number of neighbours for each city - used to find best city
+    % to visit next
     num_neighbours = zeros(length(union_edgetable), 1);
     num_cities = length(union_edgetable);
+    % Remove the given city from each entry in the edgetable
     for i = 1:length(union_edgetable)
         neighbours = cell2mat(union_edgetable(i));
-        disp(neighbours);
         neighbours = neighbours(neighbours ~= city);
         filtered_list = neighbours;
         num_neighbours(i) = length(filtered_list);
