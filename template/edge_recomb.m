@@ -8,22 +8,24 @@
 %   XOVR      - Probability of recombination occurring between pairs
 %                of individuals.
 %
-%
-%
-%
 
 function NewChrom = edge_recomb(OldChrom, XOVR)
-    % For each pair of parents
+    % For each pair of parents, make one new individual that combines the
+    % edges of the parents. Based on D.Whitley's algorithm.
     dim = size(OldChrom);
     num_individuals = dim(1);
     num_cities = dim(2);
+    
     % Use two parents for each recombination
     num_recombinations = num_individuals/2;
-    
+    do_cross = rand(num_recombinations,1) < XOVR;
     edgetable = make_edgetable(OldChrom);
-    NewChrom = zeros(num_recombinations, num_cities);
+    NewChrom = [];
     for i = 1:num_recombinations
-       % Common edges between parent i and j for each city
+        if ~do_cross(i)
+            continue
+        end
+        % Common edges between parent i and j for each city
        union_edges = cell(num_cities);
        
        % Convert from cell format in order to use union
@@ -56,6 +58,13 @@ function NewChrom = edge_recomb(OldChrom, XOVR)
        % Append the new route to list
        NewChrom(i, :) = K;
     end
+    
+    % If there are a odd number of parents, the last one can not be mated,
+    % but must be included in the new generation
+    if rem(num_individuals, 2)
+        NewChrom(num_individuals, :) = OldChrom(num_individuals, :);
+    end
+    
 end
 
 function [union_edgetable, N] = remove_edge(union_edgetable, city, K)
