@@ -20,19 +20,16 @@
 %             
 
 function NewChrIx = fps(FitnV,Nsel)
-
 % Perform fitness proportionate selection
    NewChrIx = zeros(1,Nsel);
    cumfit = cumsum(FitnV)/sum(FitnV);
-   num_selected = 1;
-   disp(cumfit);
-   while(num_selected <= Nsel)
+   
+   for i = 1:Nsel
        r = rand();
        index = 1;
-       for p = cumfit
-           if p >= r
-              NewChrIx(num_selected) = index;
-              num_selected = num_selected + 1;
+       for p = 1:length(cumfit)
+           if cumfit(p) >= r
+              NewChrIx(i) = index;
               break;
            end
            index = index + 1;
@@ -40,5 +37,7 @@ function NewChrIx = fps(FitnV,Nsel)
    end
 % Shuffle new population
    [~, shuf] = sort(rand(Nsel, 1));
+   
    NewChrIx = NewChrIx(shuf);
 % End of function
+end
