@@ -1,5 +1,6 @@
 %Evaluation script for EA on TSP 
 
+%add other performance measures from the book (chapter 9)
 %todo: how to turn off scaling? (for comparison with benchmark problems)
 
 %add toolbox to path (only relative so it implies the working dir is
@@ -16,14 +17,14 @@ PR_MUT=0.05;            % probability of mutation
 %file configurations
 DATASET_PATH = 'datasets/';   %subfolder that contains the datasets
 PLOT_PATH = 'plots/';         %subfolder for saving the plots
-PLOT_SPECIFICATION = 'test';  %explenation of the plot
+PLOT_SPECIFICATION = 'test1';  %explenation of the plot
 PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
 
 %general configurations
 CROSSOVER = 'xalt_edges';       %crossover operator
 PARENT_SELECTION = 'sus';       %parent selection operator
-MUTATION = 'inversion';         %mutation operator
-MAXGEN=100;		                % Maximum no. of generations
+MUTATION = 'inversion';%'scramble';%'insertion';         %mutation operator
+MAXGEN=2000;		                % Maximum no. of generations
 ELITIST=0.05;                   % percentage of the elite population
 STOP_PERCENTAGE=.95;            % percentage of equal fitness individuals for stopping
 PRECI=1;                        % Precision of variables
@@ -31,24 +32,24 @@ GGAP=1-ELITIST;		            % Generation gap
 LOCALLOOP=0;                    % local loop removal
 
 %PRIMARY parameter tuning (the parameter we want to iterate through)
-CHOSEN_PARAM = 'crossover rate'; 
-NUM_PRS = 15;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
-NUM_RUNS = 5;                   % Number of times we evaluate each parameter setting 
-data_names = {'rondrit016' 'rondrit048' 'rondrit100'};
+CHOSEN_PARAM = 'mutation rate'; 
+NUM_PRS = 12;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
+NUM_RUNS = 3;                   % Number of times we evaluate each parameter setting 
+data_names = {'rondrit048' 'rondrit100' 'xqf131'};
 PRIM_MIN_POP_SIZE = 5;
 PRIM_MAX_POP_SIZE = 1000;
-PRIM_MIN_MUT_RATE = 0.05;
-PRIM_MAX_MUT_RATE = 1;
-PRIM_MIN_CROSS_RATE=0;
-PRIM_MAX_CROSS_RATE=1;
+PRIM_MIN_MUT_RATE = 0.00;
+PRIM_MAX_MUT_RATE = 1.00;
+PRIM_MIN_CROSS_RATE=0.00;
+PRIM_MAX_CROSS_RATE=1.00;
 
 %SECONDARY parameter tuning (the parameters that are only changed sparsely)
-NUM_SECONDARY_PRS = 3;  % Number of parameter values for each parameter
+NUM_SECONDARY_PRS = 1;  % Number of parameter values for each parameter
 MIN_POP_SIZE = 10;
-MAX_POP_SIZE = 250;
+MAX_POP_SIZE = 400;
 MIN_MUT_RATE = 0.05;
 MAX_MUT_RATE = 0.95;
-MIN_CROSS_RATE=0;
+MIN_CROSS_RATE=0.05;
 MAX_CROSS_RATE=0.95;
 
 %---------------------------------------------------------------------------------------------
@@ -117,7 +118,15 @@ for PARAM_2_VALUE=PARAM_2_DATA
             data = load(strcat(DATASET_PATH,data_name{1},'.tsp'));
             x=data(:,1)/max([data(:,1);data(:,2)]);
             y=data(:,2)/max([data(:,1);data(:,2)]);
+             %x=data(:,1);
+             %y=data(:,2);
             NVAR=size(data,1);
+            Dist=zeros(NVAR,NVAR);
+            for i=1:size(x,1)
+                for j=1:size(y,1)
+                    Dist(i,j)=sqrt((x(i)-x(j))^2+(y(i)-y(j))^2);
+                end
+            end
             % TODO: Change this to a general method which can accept different
             % parameters (mutation, individuals, ..etc) and iterate through them
             for PARAM = CHOSEN_PARAM_DATA
@@ -127,13 +136,13 @@ for PARAM_2_VALUE=PARAM_2_DATA
                     % We have to do these string checks to get the param in the
                     % correct argument for the run_ga function
                     if strcmp(CHOSEN_PARAM, 'crossover rate')
-                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PARAM, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION);
+                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PARAM, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, Dist);
                         avg_dist = avg_dist + dist;
                     elseif strcmp(CHOSEN_PARAM, 'mutation rate')
-                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PARAM, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION);
+                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PARAM, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, Dist);
                         avg_dist = avg_dist + dist;
                     elseif strcmp(CHOSEN_PARAM, 'population size')
-                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, PARAM, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION);
+                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, PARAM, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, Dist);
                         avg_dist = avg_dist + dist;
                     else
                         msg = 'Must specify either crossover, mutation or population as chosen parameter!';
@@ -150,6 +159,7 @@ for PARAM_2_VALUE=PARAM_2_DATA
         %plotting
         clf;
         figure(fig_3d);
+        %set(fig_3d, 'Visible', 'off');
         for i = 1:length(data_names)
             plot3(PR_CROSSES,repmat(i, length(PR_CROSSES), 1),PERFORMANCE(i, :), '-o','DisplayName',data_names{i});
             grid on;

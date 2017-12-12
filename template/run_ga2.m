@@ -1,4 +1,4 @@
-function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, PARENT_SELECTION, MUTATION)
+function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, PARENT_SELECTION, MUTATION, Dist)
 % usage: [r_path, r_dist, 
 %         r_gen, r_best_fits, 
 %         r_mean_fits, r_worst_fits] 
@@ -26,12 +26,6 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
     GGAP = 1 - ELITIST;
     mean_fits=zeros(1,MAXGEN+1);
     worst=zeros(1,MAXGEN+1);
-    Dist=zeros(NVAR,NVAR);
-    for i=1:size(x,1)
-        for j=1:size(y,1)
-            Dist(i,j)=sqrt((x(i)-x(j))^2+(y(i)-y(j))^2);
-        end
-    end
     % initialize population
     Chrom=zeros(NIND,NVAR);
     for row=1:NIND
