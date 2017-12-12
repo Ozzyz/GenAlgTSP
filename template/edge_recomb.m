@@ -10,22 +10,25 @@
 %
 
 function NewChrom = edge_recomb(OldChrom, XOVR)
+    [NIND, ~] = size(OldChrom);
+    for i = 1:NIND
+       OldChrom(i, :) = adj2path(OldChrom(i, :)); 
+    end
     % For each pair of parents, make one new individual that combines the
     % edges of the parents. Based on D.Whitley's algorithm.
     dim = size(OldChrom);
     num_individuals = dim(1);
     num_cities = dim(2);
-    
     % Use two parents for each recombination
     num_recombinations = num_individuals/2;
-    do_cross = rand(num_recombinations,1) < XOVR;
     edgetable = make_edgetable(OldChrom);
     NewChrom = [];
     for i = 1:num_recombinations
-        if ~do_cross(i)
-            continue
+        if rand < XOVR
+            NewChrom(i, :) = OldChrom(i, :);
         end
         % Common edges between parent i and j for each city
+       
        union_edges = cell(num_cities);
        
        % Convert from cell format in order to use union
@@ -35,6 +38,7 @@ function NewChrom = edge_recomb(OldChrom, XOVR)
            p2_edges = cell2mat(edgetable(city, i+1));
            % Convert back to save for cell
            all_edges = union(p1_edges, p2_edges);
+           all_edges = reshape(all_edges,1, []);
            % Create nx1 size cell
            union_edges(city) = mat2cell(all_edges, 1,length(all_edges));
        end
@@ -59,12 +63,16 @@ function NewChrom = edge_recomb(OldChrom, XOVR)
        NewChrom(i, :) = K;
     end
     
+    
+    for i = 1: num_recombinations
+       NewChrom(i, :) = path2adj(NewChrom(i, :)); 
+    end
+    
     % If there are a odd number of parents, the last one can not be mated,
     % but must be included in the new generation
     if rem(num_individuals, 2)
         NewChrom(num_individuals, :) = OldChrom(num_individuals, :);
     end
-    
 end
 
 function [union_edgetable, N] = remove_edge(union_edgetable, city, K)
@@ -136,7 +144,6 @@ function EdgeTable = make_edgetable(OldChrom)
     EdgeTable = cell(num_cities, num_individuals);
     for individual = 1:num_individuals
         ind_chrom = OldChrom(individual, :);
-        
         for city_index = 1:num_cities
             city = ind_chrom(city_index);
             % If city is first in list, it has a neighbour at the far end
@@ -149,6 +156,7 @@ function EdgeTable = make_edgetable(OldChrom)
             elseif city_index == num_cities
                 right = 1;
             end 
+            
             neighbours = [ind_chrom(left), ind_chrom(right)];
             EdgeTable{city, individual} = neighbours;
         end

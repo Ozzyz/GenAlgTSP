@@ -20,7 +20,7 @@ PLOT_SPECIFICATION = 'test';  %explenation of the plot
 PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
 
 %general configurations
-CROSSOVER = 'xalt_edges';       %crossover operator
+CROSSOVER = 'edge_recomb';       %crossover operator
 PARENT_SELECTION = 'sus';       %parent selection operator
 MUTATION = 'inversion';         %mutation operator
 MAXGEN=100;		                % Maximum no. of generations
@@ -29,12 +29,17 @@ STOP_PERCENTAGE=.95;            % percentage of equal fitness individuals for st
 PRECI=1;                        % Precision of variables
 GGAP=1-ELITIST;		            % Generation gap
 LOCALLOOP=0;                    % local loop removal
-
+MU_LAMBDA = 0;                  % Whether or not to use (µ, lambda) as survivor selection
+% Can't have both survivor algorithms as the time
+if MU_LAMBDA && ELITIST
+    error("Can't have both Elitism and (µ,?)-survivor algorithm");
+end
+    
 %PRIMARY parameter tuning (the parameter we want to iterate through)
 CHOSEN_PARAM = 'crossover rate'; 
 NUM_PRS = 15;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
 NUM_RUNS = 5;                   % Number of times we evaluate each parameter setting 
-data_names = {'rondrit016' 'rondrit048' 'rondrit100'};
+data_names = {'rondrit016'};
 PRIM_MIN_POP_SIZE = 5;
 PRIM_MAX_POP_SIZE = 1000;
 PRIM_MIN_MUT_RATE = 0.05;
@@ -127,13 +132,13 @@ for PARAM_2_VALUE=PARAM_2_DATA
                     % We have to do these string checks to get the param in the
                     % correct argument for the run_ga function
                     if strcmp(CHOSEN_PARAM, 'crossover rate')
-                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PARAM, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION);
+                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PARAM, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, MU_LAMBDA);
                         avg_dist = avg_dist + dist;
                     elseif strcmp(CHOSEN_PARAM, 'mutation rate')
-                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PARAM, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION);
+                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PARAM, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, MU_LAMBDA);
                         avg_dist = avg_dist + dist;
                     elseif strcmp(CHOSEN_PARAM, 'population size')
-                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, PARAM, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION);
+                        [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, PARAM, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, MU_LAMBDA);
                         avg_dist = avg_dist + dist;
                     else
                         msg = 'Must specify either crossover, mutation or population as chosen parameter!';
