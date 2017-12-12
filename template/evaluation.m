@@ -20,10 +20,10 @@ PLOT_SPECIFICATION = 'test';  %explenation of the plot
 PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
 
 %general configurations
-CROSSOVER = 'edge_recomb';       %crossover operator
+CROSSOVER = 'xalt_edges';       %crossover operator
 PARENT_SELECTION = 'sus';       %parent selection operator
 MUTATION = 'inversion';         %mutation operator
-MAXGEN=100;		                % Maximum no. of generations
+MAXGEN=2000;		                % Maximum no. of generations
 ELITIST=0.05;                   % percentage of the elite population
 STOP_PERCENTAGE=.95;            % percentage of equal fitness individuals for stopping
 PRECI=1;                        % Precision of variables
@@ -36,10 +36,10 @@ if MU_LAMBDA && ELITIST
 end
     
 %PRIMARY parameter tuning (the parameter we want to iterate through)
-CHOSEN_PARAM = 'crossover rate'; 
+CHOSEN_PARAM = 'population size'; 
 NUM_PRS = 15;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
 NUM_RUNS = 5;                   % Number of times we evaluate each parameter setting 
-data_names = {'rondrit016'};
+data_names = {'rondrit048', 'rondrit100', 'xqf131' };
 PRIM_MIN_POP_SIZE = 5;
 PRIM_MAX_POP_SIZE = 1000;
 PRIM_MIN_MUT_RATE = 0.05;
@@ -50,10 +50,10 @@ PRIM_MAX_CROSS_RATE=1;
 %SECONDARY parameter tuning (the parameters that are only changed sparsely)
 NUM_SECONDARY_PRS = 3;  % Number of parameter values for each parameter
 MIN_POP_SIZE = 10;
-MAX_POP_SIZE = 250;
+MAX_POP_SIZE = 1000;
 MIN_MUT_RATE = 0.05;
 MAX_MUT_RATE = 0.95;
-MIN_CROSS_RATE=0;
+MIN_CROSS_RATE=0.05;
 MAX_CROSS_RATE=0.95;
 
 %---------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ MAX_CROSS_RATE=0.95;
 %create the vectors for iteration
 PR_CROSSES = linspace(PRIM_MIN_CROSS_RATE, PRIM_MAX_CROSS_RATE, NUM_PRS);
 PR_MUTS = linspace(PRIM_MIN_MUT_RATE, PRIM_MAX_MUT_RATE, NUM_PRS);
-POP_SIZE = linspace(PRIM_MIN_POP_SIZE, PRIM_MAX_POP_SIZE, NUM_PRS);
+POP_SIZE = round(linspace(PRIM_MIN_POP_SIZE, PRIM_MAX_POP_SIZE, NUM_PRS));
 PERFORMANCE = zeros(length(data_names),NUM_PRS);
 KEYSET = {'crossover rate', 'mutation rate', 'population size'};
 VALUES = {PR_CROSSES, PR_MUTS, POP_SIZE};
@@ -72,12 +72,12 @@ if strcmp(CHOSEN_PARAM, 'crossover rate')
     PARAM_2 = 'mutation rate';
     PARAM_2_DATA = linspace(MIN_MUT_RATE, MAX_MUT_RATE, NUM_SECONDARY_PRS);
     PARAM_3 = 'population size';
-    PARAM_3_DATA = linspace(MIN_POP_SIZE, MAX_POP_SIZE, NUM_SECONDARY_PRS);
+    PARAM_3_DATA = round(linspace(MIN_POP_SIZE, MAX_POP_SIZE, NUM_SECONDARY_PRS));
 elseif strcmp(CHOSEN_PARAM, 'mutation rate')
     PARAM_2 = 'crossover rate';
     PARAM_2_DATA = linspace(MIN_CROSS_RATE, MAX_CROSS_RATE, NUM_SECONDARY_PRS);
     PARAM_3 = 'population size';
-    PARAM_3_DATA = linspace(MIN_POP_SIZE, MAX_POP_SIZE, NUM_SECONDARY_PRS);
+    PARAM_3_DATA = round(linspace(MIN_POP_SIZE, MAX_POP_SIZE, NUM_SECONDARY_PRS));
 elseif strcmp(CHOSEN_PARAM, 'population size')
     PARAM_2 = 'crossover rate';
     PARAM_2_DATA = linspace(MIN_CROSS_RATE, MAX_CROSS_RATE, NUM_SECONDARY_PRS);
@@ -183,11 +183,12 @@ for PARAM_2_VALUE=PARAM_2_DATA
         title(strcat('',title_end));
         legend('show');
         view(3);
-        PLOT_FILENAME = strcat(PLOT_NAME_PREFIX,'_',MUTATION,'_',CROSSOVER,'_',PARENT_SELECTION,'_loop=',num2str(LOCALLOOP),'_elit=',num2str(ELITIST),'_var_',strrep(CHOSEN_PARAM,' ','_'),'_',num2str(NUM_PRS),'_',strrep(PARAM_2,' ','_'),'=',num2str(PARAM_2_PRINT_VAL),'_',strrep(PARAM_3,' ','_'),'=',num2str(PARAM_3_PRINT_VAL));
-        saveas(fig_3d,strcat(PLOT_FILENAME,'_','3d','.png'));
+        PLOT_FILENAME = char(strcat(PLOT_NAME_PREFIX,'_',MUTATION,'_',CROSSOVER,'_',PARENT_SELECTION,'_loop=',num2str(LOCALLOOP),'_elit=',num2str(ELITIST),'_var_',strrep(CHOSEN_PARAM,' ','_'),'_',num2str(NUM_PRS),'_',strrep(PARAM_2,' ','_'),'=',num2str(PARAM_2_PRINT_VAL),'_',strrep(PARAM_3,' ','_'),'=',num2str(PARAM_3_PRINT_VAL)));
+        saveas(fig_3d,char(strcat(PLOT_FILENAME,'_','3d')), 'png');
         %figure(fig_3d);
         az=0; el = 0; view(az, el);
-        saveas(fig_3d,strcat(PLOT_FILENAME,'_','2d','.png'));
+        text = char(strcat(PLOT_FILENAME,'_','2d'));
+        saveas(fig_3d, text, 'png');
         display('image saved');
     end
 end
