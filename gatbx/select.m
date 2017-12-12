@@ -63,7 +63,7 @@ function SelCh = select(SEL_F, Chrom, FitnV, GGAP, SUBPOP);
    SelCh = [];
    for irun = 1:SUBPOP,
       FitnVSub = FitnV((irun-1)*Nind+1:irun*Nind);
-      if strcmp(SEL_F, "tournament")
+      if strcmp(SEL_F, 'tournament')
         ChrIx=feval(SEL_F, FitnVSub, NSel, k)+(irun-1)*Nind;
       else
         ChrIx=feval(SEL_F, FitnVSub, NSel)+(irun-1)*Nind;
