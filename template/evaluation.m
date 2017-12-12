@@ -38,11 +38,11 @@ end
     
 %PRIMARY parameter tuning (the parameter we want to iterate through)
 CHOSEN_PARAM = 'population size'; 
-NUM_PRS = 15;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
-NUM_RUNS = 5;                   % Number of times we evaluate each parameter setting 
-data_names = {'rondrit048', 'rondrit100', 'xqf131' };
+NUM_PRS = 3;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
+NUM_RUNS = 2;                   % Number of times we evaluate each parameter setting 
+data_names = {'rondrit016'};%'rondrit048', 'rondrit100', 'xqf131' };
 PRIM_MIN_POP_SIZE = 5;
-PRIM_MAX_POP_SIZE = 1000;
+PRIM_MAX_POP_SIZE = 20;%1000;
 PRIM_MIN_MUT_RATE = 0.00;
 PRIM_MAX_MUT_RATE = 1.00;
 PRIM_MIN_CROSS_RATE=0.00;
@@ -135,7 +135,7 @@ for PARAM_2_VALUE=PARAM_2_DATA
             % TODO: Change this to a general method which can accept different
             % parameters (mutation, individuals, ..etc) and iterate through them
             for PARAM = CHOSEN_PARAM_DATA
-                disp(strcat(CHOSEN_PARAM,'=',num2str(PARAM),', ',PARAM_2,'=',num2str(PARAM_2_VALUE),', ',PARAM_3,'=',num2str(PARAM_3_VALUE)));
+                disp(strcat(CHOSEN_PARAM,'=',num2str(PARAM),', ',PARAM_2,'=',num2str(PARAM_2_VALUE),', ',PARAM_3,'=',num2str(PARAM_3_VALUE),',  ',data_name{1}));
                 avg_dist = 0;
                 for run = 1:NUM_RUNS
                     % We have to do these string checks to get the param in the
@@ -197,9 +197,9 @@ for PARAM_2_VALUE=PARAM_2_DATA
         saveas(fig_3d,char(strcat(PLOT_FILENAME,'_','3d')), 'png');
         %figure(fig_3d);
         az=0; el = 0; view(az, el);
-        text = char(strcat(PLOT_FILENAME,'_','2d'));
-        saveas(fig_3d, text, 'png');
-        display('image saved');
+        saveas(fig_3d, char(strcat(PLOT_FILENAME,'_','2d')), 'png');
+        save(char(strcat(PLOT_FILENAME,'_','data.mat')),'CHOSEN_PARAM', 'CHOSEN_PARAM_DATA','PARENT_SELECTION', 'MUTATION', 'CROSSOVER','PARAM_2','PARAM_2_DATA','PARAM_3', 'PARAM_3_DATA','data_names', 'STOP_PERCENTAGE','LOCALLOOP','MU_LAMBDA', 'PERFORMANCE');
+        display('image and data saved');
     end
 end
 
