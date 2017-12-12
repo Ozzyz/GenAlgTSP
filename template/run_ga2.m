@@ -1,4 +1,5 @@
-function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, PARENT_SELECTION, MUTATION, Dist)
+function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP, PARENT_SELECTION, MUTATION, Dist, MU_LAMBDA)
+
 % usage: [r_path, r_dist, 
 %         r_gen, r_best_fits, 
 %         r_mean_fits, r_worst_fits] 
@@ -22,7 +23,6 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
 
 %uncomment if you want to dsiplay the parameters at the beginning of each run
 %{NIND MAXGEN NVAR ELITIST STOP_PERCENTAGE PR_CROSS PR_MUT CROSSOVER LOCALLOOP} 
-
     GGAP = 1 - ELITIST;
     mean_fits=zeros(1,MAXGEN+1);
     worst=zeros(1,MAXGEN+1);
@@ -50,7 +50,6 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
                 break;
             end
         end
-
         %update return values for visualization
         r_path = adj2path(Chrom(t,:));
         r_gen = gen;
@@ -58,7 +57,6 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         r_best_fits = best;
         r_mean_fits = mean_fits;
         r_worst_fits = worst;
-
         if (sObjV(stopN)-sObjV(1) <= 1e-15)
             disp('stop because of similar fitness values');
             break;
@@ -85,8 +83,22 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         %evaluate offspring, call objective function
         ObjVSel = tspfun(SelCh,Dist);
         %reinsert offspring into population
-        [Chrom ObjV]=reins(Chrom,SelCh,1,1,ObjV,ObjVSel);
-
+        % if mu_lambda is true, do  (mu, lambda) survivor selection
+        if MU_LAMBDA
+           [Num_Parents, ~] = size(Chrom);
+           [Num_Children, ~] = size(SelCh);
+           % if there are more parents than children, select all children
+           if Num_Parents > Num_Children
+              Chrom = SelCh;
+              ObjV = ObjVSel;
+           else
+              Chrom = SelCh(1:Num_Parents, :);
+              ObjV = ObjVSel(1:Num_Parents, :);
+           end
+        else 
+           [Chrom, ObjV]= reins(Chrom,SelCh,1,1,ObjV,ObjVSel);
+        end
+        
         Chrom = tsp_ImprovePopulation(NIND, NVAR, Chrom,LOCALLOOP,Dist);
         %increment generation counter
         gen=gen+1;            

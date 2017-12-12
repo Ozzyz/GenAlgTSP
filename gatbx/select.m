@@ -55,12 +55,19 @@ function SelCh = select(SEL_F, Chrom, FitnV, GGAP, SUBPOP);
 
 % Compute number of new individuals (to select)
    NSel=max(floor(Nind*GGAP+.5),2);
-
+    
+  % Number of individuals to consider in tournament selection
+  % NOTE: Only used for tournament.m !!
+  k = 5;
 % Select individuals from population
    SelCh = [];
    for irun = 1:SUBPOP,
       FitnVSub = FitnV((irun-1)*Nind+1:irun*Nind);
-      ChrIx=feval(SEL_F, FitnVSub, NSel)+(irun-1)*Nind;
+      if strcmp(SEL_F, "tournament")
+        ChrIx=feval(SEL_F, FitnVSub, NSel, k)+(irun-1)*Nind;
+      else
+        ChrIx=feval(SEL_F, FitnVSub, NSel)+(irun-1)*Nind;
+      end
       SelCh=[SelCh; Chrom(ChrIx,:)];
    end
  
