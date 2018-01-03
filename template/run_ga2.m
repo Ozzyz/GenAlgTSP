@@ -23,6 +23,10 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
 
 %uncomment if you want to dsiplay the parameters at the beginning of each run
 %{NIND MAXGEN NVAR ELITIST STOP_PERCENTAGE PR_CROSS PR_MUT CROSSOVER LOCALLOOP} 
+    % This mut change is chosen pretty much at random, and has no
+    % scientific backing whatsoever.
+    MUT_CHANGE = 20*PR_MUT/MAXGEN;
+    PR_CHANGE = 12*PR_CROSS/MAXGEN;
     GGAP = 1 - ELITIST;
     mean_fits=zeros(1,MAXGEN+1);
     worst=zeros(1,MAXGEN+1);
@@ -38,6 +42,10 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
     % evaluate initial population
     ObjV = tspfun(Chrom,Dist);
     best=zeros(1,MAXGEN);
+    prev_diversity = 0;
+    
+    CROSSPR = zeros(MAXGEN);
+    MUTPR = zeros(MAXGEN);
     % generational loop
     while gen<MAXGEN
         sObjV=sort(ObjV);
@@ -62,6 +70,29 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
             break;
         end
        
+        % Do adaptive parameter control
+        % Measure diversity by looking at differece between the fitness of best
+        % individual and the average fitness, divided by the difference
+        % between the fitness of the best and the worst individual.
+        diversity = (1/min(ObjV)) - (1/mean(ObjV)) / ((1/min(ObjV)) - (1/max(ObjV)));
+        % If the diversity decreases (change is negative), increase
+        % mutation rate
+        diversity_change = diversity - prev_diversity;
+        fprintf("Diversity change: %d\n", diversity_change);
+        % Diversity increases - lower mut rate since we have explored more
+        % of the search space
+        if diversity_change < 0 && PR_MUT > 0.05
+            fprintf("Changed mutation rate from %d to %d \n", PR_MUT, PR_MUT-MUT_CHANGE);
+            PR_MUT = PR_MUT - MUT_CHANGE;
+        end
+        % Diversity decreases - hopefully we are near a local optima- so
+        % increase crossover between individuals
+        if diversity_change > 0 && PR_CROSS < 0.8
+            PR_CROSS = PR_CROSS + PR_CHANGE;
+        end
+        CROSSPR(gen+1) = PR_CROSS;
+        MUTPR(gen+1) = PR_MUT;
+        prev_diversity = diversity;
         %new stopping criterion
         stop_interval = 80;
         if (gen > stop_interval)
@@ -103,4 +134,16 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         %increment generation counter
         gen=gen+1;            
     end
+    
+    CROSSPR = CROSSPR(1:gen);
+    MUTPR = MUTPR(1:gen);
+    plot(linspace(0,gen, gen), CROSSPR);
+    hold on;
+    plot(linspace(0, gen, gen), MUTPR);
+    hold off;
+    ylim([0 1])
+    xlabel('Generation');
+    ylabel('Probability');
+    legend('p_c', 'p_m');
+    figure;
 end

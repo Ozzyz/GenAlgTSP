@@ -17,8 +17,12 @@ PR_MUT=0.05;            % probability of mutation
 %file configurations
 DATASET_PATH = 'datasets/';   %subfolder that contains the datasets
 PLOT_PATH = 'plots/';         %subfolder for saving the plots
-PLOT_SPECIFICATION = 'test1';  %explenation of the plot
+PLOT_SPECIFICATION = 'test3_';  %explenation of the plot
 PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
+
+
+
+
 
 %general configurations
 CROSSOVER = 'xalt_edges';       %crossover operator
@@ -35,27 +39,35 @@ MU_LAMBDA = 0;                  % Whether or not to use (mu, lambda) as survivor
 if MU_LAMBDA && ELITIST
     error('Can not have both Elitism and (mu,lambda)-survivor algorithm');
 end
-    
+
+%Adaptive parameter control. Activated if ADAPTIVE = 1
+% The delta says how much the parameter changes each generation
+ADAPTIVE = 0;
+CROSSOVER_DELTA = 0.5/MAXGEN;
+MUTATION_DELTA = -0.5/MAXGEN;
+
 %PRIMARY parameter tuning (the parameter we want to iterate through)
-CHOSEN_PARAM = 'population size'; 
-NUM_PRS = 15;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
-NUM_RUNS = 5;                   % Number of times we evaluate each parameter setting 
-data_names = {'rondrit048', 'rondrit100', 'xqf131' };
-PRIM_MIN_POP_SIZE = 5;
-PRIM_MAX_POP_SIZE = 1000;
+CHOSEN_PARAM = 'mutation rate'; 
+NUM_PRS = 1;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
+NUM_RUNS = 1;                   % Number of times we evaluate each parameter setting 
+data_names = {'rondrit048', 'xqf131' };
+PRIM_MIN_POP_SIZE = 10;
+PRIM_MAX_POP_SIZE = 150;
 PRIM_MIN_MUT_RATE = 0.00;
-PRIM_MAX_MUT_RATE = 1.00;
+PRIM_MAX_MUT_RATE = 0.8;
 PRIM_MIN_CROSS_RATE=0.00;
-PRIM_MAX_CROSS_RATE=1.00;
+PRIM_MAX_CROSS_RATE=0.2;
 
 %SECONDARY parameter tuning (the parameters that are only changed sparsely)
 NUM_SECONDARY_PRS = 1;  % Number of parameter values for each parameter
-MIN_POP_SIZE = 10;
-MAX_POP_SIZE = 1000;
+MIN_POP_SIZE = 50;
+MAX_POP_SIZE = 200;
 MIN_MUT_RATE = 0.05;
 MAX_MUT_RATE = 0.95;
-MIN_CROSS_RATE=0.05;
-MAX_CROSS_RATE=0.95;
+MIN_CROSS_RATE=0.2;
+MAX_CROSS_RATE=0.2;
+
+
 
 %---------------------------------------------------------------------------------------------
 
@@ -89,8 +101,6 @@ else
     error(msg)
 end 
 
-%create one figure that will be continously updated
-fig_3d = figure;
 
 %---------------------------------------------------------------------------------------------
 
@@ -105,6 +115,9 @@ for PARAM_2_VALUE=PARAM_2_DATA
     end
 
     for PARAM_3_VALUE=PARAM_3_DATA
+        %create one figure that will be continously updated
+        fig_3d = figure;
+
         if strcmp(PARAM_3, 'crossover rate')
             PR_CROSS = PARAM_3_VALUE;
         elseif strcmp(PARAM_3, 'mutation rate')
@@ -194,7 +207,8 @@ for PARAM_2_VALUE=PARAM_2_DATA
         legend('show');
         view(3);
         PLOT_FILENAME = char(strcat(PLOT_NAME_PREFIX,'_',MUTATION,'_',CROSSOVER,'_',PARENT_SELECTION,'_loop=',num2str(LOCALLOOP),'_elit=',num2str(ELITIST),'_var_',strrep(CHOSEN_PARAM,' ','_'),'_',num2str(NUM_PRS),'_',strrep(PARAM_2,' ','_'),'=',num2str(PARAM_2_PRINT_VAL),'_',strrep(PARAM_3,' ','_'),'=',num2str(PARAM_3_PRINT_VAL)));
-        saveas(fig_3d,char(strcat(PLOT_FILENAME,'_','3d')), 'png');
+        disp(PLOT_FILENAME);
+        saveas(fig_3d, char(strcat(PLOT_FILENAME,'_','3d')), 'png');
         %figure(fig_3d);
         az=0; el = 0; view(az, el);
         text = char(strcat(PLOT_FILENAME,'_','2d'));
