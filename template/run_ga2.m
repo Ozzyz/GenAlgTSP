@@ -21,12 +21,13 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
 % the returnvalues are the results of the ga and are further used for
 % visualization
 
+
 %uncomment if you want to dsiplay the parameters at the beginning of each run
 %{NIND MAXGEN NVAR ELITIST STOP_PERCENTAGE PR_CROSS PR_MUT CROSSOVER LOCALLOOP} 
     % This mut change is chosen pretty much at random, and has no
     % scientific backing whatsoever.
-    MUT_CHANGE = 20*PR_MUT/MAXGEN;
-    PR_CHANGE = 12*PR_CROSS/MAXGEN;
+    MUT_CHANGE = 30*PR_MUT/MAXGEN;
+    PR_CHANGE = 15*PR_CROSS/MAXGEN;
     GGAP = 1 - ELITIST;
     mean_fits=zeros(1,MAXGEN+1);
     worst=zeros(1,MAXGEN+1);
@@ -46,6 +47,7 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
     
     CROSSPR = zeros(MAXGEN);
     MUTPR = zeros(MAXGEN);
+    DIV = zeros(MAXGEN);
     % generational loop
     while gen<MAXGEN
         sObjV=sort(ObjV);
@@ -74,25 +76,29 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         % Measure diversity by looking at differece between the fitness of best
         % individual and the average fitness, divided by the difference
         % between the fitness of the best and the worst individual.
-        diversity = (1/min(ObjV)) - (1/mean(ObjV)) / ((1/min(ObjV)) - (1/max(ObjV)));
+        diversity = ((1/min(ObjV)) - (1/mean(ObjV))) / ((1/min(ObjV)) - (1/max(ObjV)));
+        %fprintf("Best fitness: %d, Worst fitness: %d, Mean fitness: %d\n", 1/min(ObjV), 1/max(ObjV), 1/mean(ObjV));
+        %fprintf("Diversity: %d\n", diversity);
         % If the diversity decreases (change is negative), increase
         % mutation rate
         diversity_change = diversity - prev_diversity;
-        fprintf("Diversity change: %d\n", diversity_change);
+        %fprintf("Diversity change: %d\n", diversity_change);
         % Diversity increases - lower mut rate since we have explored more
         % of the search space
         if diversity_change < 0 && PR_MUT > 0.05
-            fprintf("Changed mutation rate from %d to %d \n", PR_MUT, PR_MUT-MUT_CHANGE);
+            %fprintf("Changed mutation rate from %d to %d \n", PR_MUT, PR_MUT-MUT_CHANGE);
             PR_MUT = PR_MUT - MUT_CHANGE;
         end
-        % Diversity decreases - hopefully we are near a local optima- so
-        % increase crossover between individuals
+         %Diversity decreases - hopefully we are near a local optima- so
+         %increase crossover between individuals
         if diversity_change > 0 && PR_CROSS < 0.8
             PR_CROSS = PR_CROSS + PR_CHANGE;
         end
         CROSSPR(gen+1) = PR_CROSS;
         MUTPR(gen+1) = PR_MUT;
+        
         prev_diversity = diversity;
+        DIV(gen+1) = prev_diversity;
         %new stopping criterion
         stop_interval = 80;
         if (gen > stop_interval)
@@ -134,16 +140,27 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         %increment generation counter
         gen=gen+1;            
     end
-    
+    %{
+    hold off;
+    figure;
     CROSSPR = CROSSPR(1:gen);
     MUTPR = MUTPR(1:gen);
+    DIV = DIV(1:gen);
     plot(linspace(0,gen, gen), CROSSPR);
     hold on;
     plot(linspace(0, gen, gen), MUTPR);
-    hold off;
+    hold on;
+    plot(linspace(0,gen,gen), DIV);
     ylim([0 1])
     xlabel('Generation');
-    ylabel('Probability');
-    legend('p_c', 'p_m');
-    figure;
+    ylabel('Probability/Value');
+    hold on;
+    yyaxis right;
+    %disp(best(1:gen).^-1);
+    plot(linspace(0,gen,gen), best(1:gen).^-1);
+    ylabel("Fitness value");
+    hleg = legend('p_c', 'p_m', 'Diversity', 'Fitness best individual');
+    set(hleg,'Location','best')
+    hold off;
+    %}
 end
