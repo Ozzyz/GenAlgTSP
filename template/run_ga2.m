@@ -63,7 +63,7 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         end
        
         %new stopping criterion
-        stop_interval = 80;
+        stop_interval = 50;
         if (gen > stop_interval)
             min_stop_delta = best(gen-stop_interval)*0.001;
             if(abs(best(gen-stop_interval) - best(gen)) < min_stop_delta)
