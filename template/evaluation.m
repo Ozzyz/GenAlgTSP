@@ -20,9 +20,9 @@ PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
 %mkdir(PLOT_PATH);
 
 %general configurations
-data_names = {'rondrit016' 'rondrit023'};
-%data_names = {'xqf131' 'bcl380' 'xql662'};
-SCALING = 1;                    %scaling for better plots
+%data_names = {'rondrit016' 'rondrit023'};
+data_names = {'xqf131' 'bcl380' 'xql662'};
+SCALING = 1;                    %scaling for better plots (enabled by default, is overwritten for benchmarking)
 CROSSOVER = 'xalt_edges';       %crossover operator
 PARENT_SELECTION = 'sus';       %parent selection operator
 MUTATION = 'inversion';%'scramble';%'insertion';         %mutation operator
