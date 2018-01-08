@@ -43,6 +43,32 @@ if MU_LAMBDA && ELITIST
     error('Can not have both Elitism and (mu,lambda)-survivor algorithm');
 end
 
+%Adaptive parameter control. Activated if ADAPTIVE = 1
+% The delta says how much the parameter changes each generation
+ADAPTIVE = 0;
+CROSSOVER_DELTA = 0.5/MAXGEN;
+MUTATION_DELTA = -0.5/MAXGEN;
+
+%PRIMARY parameter tuning (the parameter we want to iterate through)
+CHOSEN_PARAM = 'mutation rate'; 
+NUM_PRS = 1;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
+NUM_RUNS = 3;                   % Number of times we evaluate each parameter setting 
+data_names = {'rondrit048', 'xqf131' };
+PRIM_MIN_POP_SIZE = 10;
+PRIM_MAX_POP_SIZE = 150;
+PRIM_MIN_MUT_RATE = 0.00;
+PRIM_MAX_MUT_RATE = 0.8;
+PRIM_MIN_CROSS_RATE=0.00;
+PRIM_MAX_CROSS_RATE=0.2;
+
+%SECONDARY parameter tuning (the parameters that are only changed sparsely)
+NUM_SECONDARY_PRS = 1;  % Number of parameter values for each parameter
+MIN_POP_SIZE = 50;
+MAX_POP_SIZE = 200;
+MIN_MUT_RATE = 0.05;
+MAX_MUT_RATE = 0.95;
+MIN_CROSS_RATE=0.2;
+MAX_CROSS_RATE=0.3;
 
 MODE = 'benchmarking'; %'paremeter tuning'
 %benchmarking... mutation rate, crossover rate and population size are fixed and the performance is plotted for different benchmark problems
@@ -224,7 +250,14 @@ for PARAM_2_VALUE=PARAM_2_DATA
             pr_num = 1;
             data_num = data_num + 1;
         end
-
+        clf;
+        figure;
+        for i=1:length(data_names)
+           disp(PERFORMANCE(i, :));
+           plot(linspace(0,NUM_RUNS, NUM_RUNS), PERFORMANCE(i, :), 'DisplayName', data_names{i});
+           hold on;
+        end
+        %{
         %plotting
         plot_fig = figure;
         clf;
@@ -325,6 +358,7 @@ for PARAM_2_VALUE=PARAM_2_DATA
         text = char(strcat(PLOT_FILENAME,'_','2d'));
         saveas(fig_3d, text, 'png');
         display('image saved');
+        %}
     end
 end
 
