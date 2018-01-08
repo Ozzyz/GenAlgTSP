@@ -18,6 +18,11 @@ PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
 
 %create folder if non-existing
 %mkdir(PLOT_PATH);
+PLOT_SPECIFICATION = 'test3_';  %explenation of the plot
+PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
+
+
+
 
 %general configurations
 %data_names = {'rondrit016' 'rondrit023'};
@@ -49,11 +54,14 @@ if strcmp(MODE, 'benchmarking')
     PLOT_NAME_PREFIX = strcat(PLOT_NAME_PREFIX, 'benchmark');
     
     SCALING = 0;            %enable or disable scaling, scaling can be used to compare different distances easier
-    PLOT_TOURS= 1;          %enable or disable plotting of the resulting tour for every run
+    PLOT_TOURS= 0;          %enable or disable plotting of the resulting tour for every run
     BENCH_POP_SIZE= 200;    %used population size
-    BENCH_MUT_RATE=0.6;     %used mutation rate
-    BENCH_CROSS_RATE=0.2;   %used crossover rate
+    BENCH_MUT_RATE=0.2;     %used mutation rate
+    BENCH_CROSS_RATE=0.5;   %used crossover rate
     NUM_RUNS = 5;           %number of runs that are averaged for every problem
+
+   
+
 
     %do NOT change this!
     CHOSEN_PARAM = 'population size'; 
@@ -147,7 +155,9 @@ for PARAM_2_VALUE=PARAM_2_DATA
 
     for PARAM_3_VALUE=PARAM_3_DATA
         %create one figure that will be continously updated
-        
+
+        fig_3d = figure;
+
         if strcmp(PARAM_3, 'crossover rate')
             PR_CROSS = PARAM_3_VALUE;
         elseif strcmp(PARAM_3, 'mutation rate')
@@ -282,7 +292,39 @@ for PARAM_2_VALUE=PARAM_2_DATA
             saveas(plot_fig, char(strcat(PLOT_FILENAME,'_','2d')), 'png');
             save(char(strcat(PLOT_FILENAME,'_','data.mat')),'MODE','CHOSEN_PARAM', 'CHOSEN_PARAM_DATA','PARENT_SELECTION', 'MUTATION', 'CROSSOVER','PARAM_2','PARAM_2_DATA','PARAM_3', 'PARAM_3_DATA','data_names', 'STOP_PERCENTAGE','LOCALLOOP','MU_LAMBDA', 'PERFORMANCE');
         end
+
         display('image and data saved');
+        hold off;
+        xlabel(CHOSEN_PARAM);
+        ylabel('problem');
+        zlabel('performance');
+
+        PARAM_3_PRINT_VAL = PARAM_3_VALUE;
+        if strcmp(CHOSEN_PARAM, 'crossover rate')
+            PARAM_2_PRINT_VAL = PARAM_2_VALUE *100;
+            title_end = strcat('mut.rate =', num2str(PR_MUT),', pop.size=',num2str(NIND));
+        elseif strcmp(CHOSEN_PARAM, 'mutation rate')
+            PARAM_2_PRINT_VAL = PARAM_2_VALUE *100;
+            title_end = strcat('cross.rate =', num2str(PR_CROSS),', pop.size=',num2str(NIND));
+        elseif strcmp(CHOSEN_PARAM, 'population size')
+            PARAM_2_PRINT_VAL = PARAM_2_VALUE *100;
+            PARAM_3_PRINT_VAL = PARAM_3_VALUE *100;
+            title_end = strcat('mut.rate =', num2str(PR_MUT),', cross.rate=',num2str(PR_CROSS));
+        else
+            msg = 'Must specify either crossover, mutation or population as chosen parameter!';
+            error(msg)
+        end 
+        title(strcat('',title_end));
+        legend('show');
+        view(3);
+        PLOT_FILENAME = char(strcat(PLOT_NAME_PREFIX,'_',MUTATION,'_',CROSSOVER,'_',PARENT_SELECTION,'_loop=',num2str(LOCALLOOP),'_elit=',num2str(ELITIST),'_var_',strrep(CHOSEN_PARAM,' ','_'),'_',num2str(NUM_PRS),'_',strrep(PARAM_2,' ','_'),'=',num2str(PARAM_2_PRINT_VAL),'_',strrep(PARAM_3,' ','_'),'=',num2str(PARAM_3_PRINT_VAL)));
+        disp(PLOT_FILENAME);
+        saveas(fig_3d, char(strcat(PLOT_FILENAME,'_','3d')), 'png');
+        %figure(fig_3d);
+        az=0; el = 0; view(az, el);
+        text = char(strcat(PLOT_FILENAME,'_','2d'));
+        saveas(fig_3d, text, 'png');
+        display('image saved');
     end
 end
 

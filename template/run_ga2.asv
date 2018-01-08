@@ -83,13 +83,13 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         %fprintf("Diversity change: %d\n", diversity_change);
         % Diversity increases - lower mut rate since we have explored more
         % of the search space
-        if diversity_change > 0 && PR_MUT > 0.05
+        if diversity_change  0 && PR_MUT > 0.05
             %fprintf("Changed mutation rate from %d to %d \n", PR_MUT, PR_MUT-MUT_CHANGE);
             PR_MUT = PR_MUT - MUT_CHANGE;
         end
         % Diversity decreases - hopefully we are near a local optima- so
         % increase crossover between individuals
-        if diversity_change < 0 && PR_CROSS < 0.8
+        if diversity_change > 0 && PR_CROSS < 0.8
             PR_CROSS = PR_CROSS + PR_CHANGE;
         end
         CROSSPR(gen+1) = PR_CROSS;
@@ -137,15 +137,15 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         gen=gen+1;            
     end
     
-    CROSSPR = CROSSPR(1:gen);
-    MUTPR = MUTPR(1:gen);
-    plot(linspace(0,gen, gen), CROSSPR);
-    hold on;
-    plot(linspace(0, gen, gen), MUTPR);
-    hold off;
-    ylim([0 1])
-    xlabel('Generation');
-    ylabel('Probability');
-    legend('p_c', 'p_m');
-    figure;
+    %CROSSPR = CROSSPR(1:gen);
+    %MUTPR = MUTPR(1:gen);
+    %plot(linspace(0,gen, gen), CROSSPR);
+    %hold on;
+    %plot(linspace(0, gen, gen), MUTPR);
+    %hold off;
+    %ylim([0 1])
+    %xlabel('Generation');
+    %ylabel('Probability');
+    %legend('p_c', 'p_m');
+    %figure;
 end
