@@ -13,16 +13,12 @@ PR_MUT=0.05;            % probability of mutation
 %file configurations
 DATASET_PATH = 'datasets/';   %subfolder that contains the datasets
 PLOT_PATH = 'plots/';         %subfolder for saving the plots
-PLOT_SPECIFICATION = 'test';  %explenation of the plot
-PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
+
 
 %create folder if non-existing
 %mkdir(PLOT_PATH);
 PLOT_SPECIFICATION = 'test3_';  %explenation of the plot
 PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
-
-
-
 
 %general configurations
 %data_names = {'rondrit016' 'rondrit023'};
@@ -181,7 +177,6 @@ for PARAM_2_VALUE=PARAM_2_DATA
 
     for PARAM_3_VALUE=PARAM_3_DATA
         %create one figure that will be continously updated
-
         fig_3d = figure;
 
         if strcmp(PARAM_3, 'crossover rate')

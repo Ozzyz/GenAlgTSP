@@ -73,7 +73,7 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
             break;
         end
         fprintf("Generation %d, best: %d\n", gen, min(ObjV));
-        
+
         % Do adaptive parameter control
         % Measure diversity by looking at differece between the fitness of best
         % individual and the average fitness, divided by the difference
