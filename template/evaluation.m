@@ -20,12 +20,16 @@ PLOT_NAME_PREFIX = strcat(PLOT_PATH,PLOT_SPECIFICATION);
 %mkdir(PLOT_PATH);
 
 %general configurations
-%data_names = {'rondrit016' 'rondrit023'};
-data_names = {'xqf131' 'bcl380' 'xql662'};
+
+%data_names = {'rondrit048' ,'xqf131'};
+data_names = {'xqf131'};
+%data_names = {'xqf131' 'bcl380'};
+%data_names = {'xqf131' 'bcl380' 'xql662'};
+LOCAL_SEARCH = 1;
 SCALING = 1;                    %scaling for better plots (enabled by default, is overwritten for benchmarking)
 CROSSOVER = 'xalt_edges';       %crossover operator
-PARENT_SELECTION = 'sus';       %parent selection operator
-MUTATION = 'inversion';%'scramble';%'insertion';         %mutation operator
+PARENT_SELECTION = 'tournament';       %parent selection operator
+MUTATION = 'inversion';%'insertion';%'scramble';%'insertion'; %'inversion';         %mutation operator
 MAXGEN=2000;		                % Maximum no. of generations
 ELITIST=0.05;                   % percentage of the elite population
 STOP_PERCENTAGE=.95;            % percentage of equal fitness individuals for stopping
@@ -39,7 +43,7 @@ if MU_LAMBDA && ELITIST
 end
 
 
-MODE = 'benchmarking'; %'paremeter tuning'
+MODE = 'benchmarking';
 %benchmarking... mutation rate, crossover rate and population size are fixed and the performance is plotted for different benchmark problems
 %parameter tuning... the parameters are changed and the different results are used to create a plot to see the development of fitness for the changes
 
@@ -51,8 +55,8 @@ if strcmp(MODE, 'benchmarking')
     SCALING = 0;            %enable or disable scaling, scaling can be used to compare different distances easier
     PLOT_TOURS= 1;          %enable or disable plotting of the resulting tour for every run
     BENCH_POP_SIZE= 200;    %used population size
-    BENCH_MUT_RATE=0.6;     %used mutation rate
-    BENCH_CROSS_RATE=0.2;   %used crossover rate
+    BENCH_MUT_RATE=0.2;     %used mutation rate
+    BENCH_CROSS_RATE=0.5;   %used crossover rate
     NUM_RUNS = 5;           %number of runs that are averaged for every problem
 
     %do NOT change this!
@@ -74,30 +78,31 @@ if strcmp(MODE, 'benchmarking')
 
     PLOT_FILENAME = char(strcat(PLOT_NAME_PREFIX,'_',MUTATION,'_',CROSSOVER,'_',PARENT_SELECTION,'_loop=',num2str(LOCALLOOP),'_elit=',num2str(ELITIST),'pop=', num2str(BENCH_POP_SIZE), '_', 'mut=', num2str(BENCH_MUT_RATE*100),'cross=', num2str(BENCH_CROSS_RATE*100)));
 
-elseif strcmp(MODE, 'paremeter tuning')
+elseif strcmp(MODE, 'parameter tuning')
 %Parameter tuning configuration:
 %---------------------------------------------------------------------------------------------------------------
     PLOT_NAME_PREFIX = strcat(PLOT_SPECIFICATION, 'tuning');
+    PLOT_TOURS= 0;
 
     %PRIMARY parameter tuning (the parameter we want to iterate through)
-    CHOSEN_PARAM = 'population size'; 
-    NUM_PRS = 10;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
+    CHOSEN_PARAM = 'crossover rate'; 
+    NUM_PRS = 8;                    % Number of parameter values (linearly spaced between min and max)  if 1 -> max
     NUM_RUNS = 5;                   % Number of times we evaluate each parameter setting 
     PRIM_MIN_POP_SIZE = 50;
     PRIM_MAX_POP_SIZE = 400;
-    PRIM_MIN_MUT_RATE = 0.00;
-    PRIM_MAX_MUT_RATE = 1.00;
-    PRIM_MIN_CROSS_RATE=0.00;
-    PRIM_MAX_CROSS_RATE=1.00;
+    PRIM_MIN_MUT_RATE = 0.05;
+    PRIM_MAX_MUT_RATE = 0.95;
+    PRIM_MIN_CROSS_RATE=0.05;
+    PRIM_MAX_CROSS_RATE=0.95;
 
     %SECONDARY parameter tuning (the parameters that are only changed sparsely)
     NUM_SECONDARY_PRS = 1;  % Number of parameter values for each parameter
     MIN_POP_SIZE = 10;
-    MAX_POP_SIZE = 1000;
+    MAX_POP_SIZE = 200;
     MIN_MUT_RATE = 0.05;
-    MAX_MUT_RATE = 0.6;
+    MAX_MUT_RATE = 0.25;
     MIN_CROSS_RATE=0.05;
-    MAX_CROSS_RATE=0.2;
+    MAX_CROSS_RATE=0.25;
 
 end
 %---------------------------------------------------------------------------------------------------------------
@@ -188,19 +193,31 @@ for PARAM_2_VALUE=PARAM_2_DATA
                 for run = 1:NUM_RUNS
                     % We have to do these string checks to get the param in the
                     % correct argument for the run_ga function
+                    tic;
                     if strcmp(CHOSEN_PARAM, 'crossover rate')
                         [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PARAM, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, Dist, MU_LAMBDA);
-                        avg_dist = avg_dist + dist;
+                        toc;
                     elseif strcmp(CHOSEN_PARAM, 'mutation rate')
                         [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, NIND, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PARAM, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION, Dist, MU_LAMBDA);
-                        avg_dist = avg_dist + dist;
+                        toc;
                     elseif strcmp(CHOSEN_PARAM, 'population size')
                         [path, dist, nr_gens, best_fits, mean_fits, worst_fits] = run_ga2(x, y, PARAM, MAXGEN, NVAR, ELITIST, STOP_PERCENTAGE, PR_CROSS, PR_MUT, CROSSOVER, LOCALLOOP,PARENT_SELECTION,MUTATION,Dist, MU_LAMBDA);
-                        avg_dist = avg_dist + dist;
+                        toc;
                     else
                         msg = 'Must specify either crossover, mutation or population as chosen parameter!';
                         error(msg)
                     end 
+                    %avg_dist = avg_dist + dist;
+                    
+                    if LOCAL_SEARCH
+                        %tic;
+                        path = localsearch2(path,0,Dist);
+                        disp('doing local search');
+                        %toc;
+                        dist = tspfun(path2adj(path),Dist);
+                    end
+                    
+                    avg_dist = avg_dist + dist;
 
                     if PLOT_TOURS 
                         tour_plot_name = char(strcat(PLOT_FILENAME,'tour_',data_name,'_',num2str(run)));
@@ -239,7 +256,7 @@ for PARAM_2_VALUE=PARAM_2_DATA
             saveas(plot_fig, char(PLOT_FILENAME), 'png');
             save(char(strcat(PLOT_FILENAME,'_','data.mat')),'MODE','BENCH_POP_SIZE', 'BENCH_MUT_RATE','BENCH_CROSS_RATE','PARENT_SELECTION', 'MUTATION', 'CROSSOVER','data_names', 'STOP_PERCENTAGE','LOCALLOOP','MU_LAMBDA', 'PERFORMANCE');
 
-        elseif strcmp(MODE, 'paremeter tuning')
+        elseif strcmp(MODE, 'parameter tuning')
             %set(plot_fig, 'Visible', 'off');
             for i = 1:length(data_names)
                 if strcmp(CHOSEN_PARAM, 'population size')

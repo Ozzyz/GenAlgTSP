@@ -21,6 +21,8 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
 % the returnvalues are the results of the ga and are further used for
 % visualization
 
+
+
 %uncomment if you want to dsiplay the parameters at the beginning of each run
 %{NIND MAXGEN NVAR ELITIST STOP_PERCENTAGE PR_CROSS PR_MUT CROSSOVER LOCALLOOP} 
     GGAP = 1 - ELITIST;

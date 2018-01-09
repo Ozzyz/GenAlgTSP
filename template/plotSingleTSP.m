@@ -13,7 +13,7 @@ function plotSingleTSP(X,Y, Path, TotalDist, gen, best_fits, mean_fits, worst_fi
 %   filename: filename for the plots
 
   path_fig = figure;
-  %evol_fig = figure;
+  evol_fig = figure;
   %hist_fig = figure;
   if display_plot == 0
       set(path_fig,'Visible', 'off');
@@ -30,16 +30,16 @@ function plotSingleTSP(X,Y, Path, TotalDist, gen, best_fits, mean_fits, worst_fi
   xlabel('x');
   ylabel('y');
   
-%   %plot the evolution of the fitness values over the generations
-%   figure(evol_fig);
-%   plot([0:gen],best_fits(1:gen+1),'r-','DisplayName','best');
-%   hold on
-%   plot([0:gen],mean_fits(1:gen+1),'b-','DisplayName','mean');
-%   hold on
-%   plot([0:gen],worst_fits(1:gen+1),'g-','DisplayName','worst');
-%   xlabel('Generation');
-%   ylabel('Distance');
-%   legend('show');
+  %plot the evolution of the fitness values over the generations
+  figure(evol_fig);
+  plot([0:gen],best_fits(1:gen+1),'r-','DisplayName','best');
+  hold on
+  plot([0:gen],mean_fits(1:gen+1),'b-','DisplayName','mean');
+  hold on
+  plot([0:gen],worst_fits(1:gen+1),'g-','DisplayName','worst');
+  xlabel('Generation');
+  ylabel('Distance');
+  legend('show');
 %   
   %plot histogram of distances
   %figure(hist_fig);
