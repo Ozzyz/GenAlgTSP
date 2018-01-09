@@ -21,6 +21,10 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
 % the returnvalues are the results of the ga and are further used for
 % visualization
 
+ADAPTIVE = 1;
+prev_diversity = 0;
+MUT_CHANGE = 30*PR_MUT/MAXGEN;
+PR_CHANGE = 15*PR_CROSS/MAXGEN;
 
 
 %uncomment if you want to dsiplay the parameters at the beginning of each run
@@ -62,6 +66,30 @@ function [r_path, r_dist, r_gen, r_best_fits, r_mean_fits, r_worst_fits] = run_g
         if (sObjV(stopN)-sObjV(1) <= 1e-15)
             disp('stop because of similar fitness values');
             break;
+        end
+        
+        if(ADAPTIVE)
+            % Do adaptive parameter control
+            % Measure diversity by looking at differece between the fitness of best
+            % individual and the average fitness, divided by the difference
+            % between the fitness of the best and the worst individual.
+            diversity = (1/min(ObjV)) - (1/mean(ObjV)) / ((1/min(ObjV)) - (1/max(ObjV)));
+            % If the diversity decreases (change is negative), increase
+            % mutation rate
+            diversity_change = diversity - prev_diversity;
+            %fprintf("Diversity change: %d\n", diversity_change);
+            % Diversity increases - lower mut rate since we have explored more
+            % of the search space
+            if diversity_change  0 && PR_MUT > 0.05
+                %fprintf("Changed mutation rate from %d to %d \n", PR_MUT, PR_MUT-MUT_CHANGE);
+                PR_MUT = PR_MUT - MUT_CHANGE;
+            end
+            % Diversity decreases - hopefully we are near a local optima- so
+            % increase crossover between individuals
+            if diversity_change > 0 && PR_CROSS < 0.8
+                PR_CROSS = PR_CROSS + PR_CHANGE;
+            end
+            prev_diversity = diversity;
         end
        
         %new stopping criterion
